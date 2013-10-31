@@ -28,12 +28,12 @@
  
 package pluginframework;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
 import protocol.HttpRequest;
-import protocol.Protocol;
-import protocol.ProtocolException;
 
 /**
  * 
@@ -42,7 +42,8 @@ import protocol.ProtocolException;
 public class PluginRouter {
 	
 	private HashMap<String, Plugin> pluginMapping;
-	
+	//Testing to see if this works
+	private File directory = new File("C:/Users/agnerrl/Desktop/HW4plugin");
 	public PluginRouter(){
 		pluginMapping = new HashMap<String, Plugin>();
 	}
@@ -57,9 +58,15 @@ public class PluginRouter {
 		}
 	}
 	
-	public void addPlugin() {
+	public ArrayList<String> addPlugin() {
 		// poll folder every 5 seconds?
 		// check for new plugins
 		// add to pluginMapping
+		File files[] = directory.listFiles();
+		ArrayList<String> testing = new ArrayList<String>();
+		for (File file : files){
+			testing.add(file.getName());
+		}
+		return testing;
 	}
 }
