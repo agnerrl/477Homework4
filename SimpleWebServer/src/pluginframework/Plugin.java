@@ -29,6 +29,7 @@
 package pluginframework;
 
 import protocol.HttpRequest;
+import protocol.HttpResponse;
 
 /**
  * 
@@ -42,8 +43,12 @@ public class Plugin {
 		this.directory = directory;
 	}
 	
-	public void routeRequest(HttpRequest request) {
-		
+	public HttpResponse routeRequest(HttpRequest request) {
+		return null;
+	}
+	
+	public String getPluginName(){
+		return "";
 	}
 	
 }

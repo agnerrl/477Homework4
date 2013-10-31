@@ -27,7 +27,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
+import org.omg.CORBA.RepositoryIdHelper;
+
+import pluginframework.Plugin;
 import protocol.HttpRequest;
 import protocol.HttpResponse;
 import protocol.HttpResponseFactory;
@@ -132,146 +136,29 @@ public class ConnectionHandler implements Runnable {
 			return;
 		}
 		
+		File file = new File(server.getRootDirectory() + request.getUri());
 		
+		// We reached here means no error so far, so lets process further
+		response = staticFileHandling(request, response, file);
 		
-//		// We reached here means no error so far, so lets process further
-//		try {
-//			// Fill in the code to create a response for version mismatch.
-//			// You may want to use constants such as Protocol.VERSION, Protocol.NOT_SUPPORTED_CODE, and more.
-//			// You can check if the version matches as follows
-//			if(!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
-//				// Here you checked that the "Protocol.VERSION" string is not equal to the  
-//				// "request.version" string ignoring the case of the letters in both strings
-//				// TODO: Fill in the rest of the code here
-//			}
-//			else if(request.getMethod().equalsIgnoreCase(Protocol.GET)) {
-////				Map<String, String> header = request.getHeader();
-////				String date = header.get("if-modified-since");
-////				String hostName = header.get("host");
-////				
-//				// Handling GET request here
-//				// Get relative URI path from request
-//				String uri = request.getUri();
-//				// Get root directory path from server
-//				String rootDirectory = server.getRootDirectory();
-//				// Combine them together to form absolute file path
-//				File file = new File(rootDirectory + uri);
-//				// Check if the file exists
-//				if(file.exists()) {
-//					if(file.isDirectory()) {
-//						// Look for default index.html file in a directory
-//						String location = rootDirectory + uri + System.getProperty("file.separator") + Protocol.DEFAULT_FILE;
-//						file = new File(location);
-//						if(file.exists()) {
-//							// Lets create 200 OK response
-//							response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
-//						}
-//						else {
-//							// File does not exist so lets create 404 file not found code
-//							response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
-//						}
-//					}
-//					else { // Its a file
-//						// Lets create 200 OK response
-//						response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
-//					}
-//				}
-//				else {
-//					// File does not exist so lets create 404 file not found code
-//					response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
-//				}
-//			}
-//////////////////Here is the DELETE
-//			else if(request.getMethod().equalsIgnoreCase(Protocol.DELETE)){
-//				
-//				System.out.println("we did a DELETE");
-//				// Handling GET request here
-//				// Get relative URI path from request
-//				String uri = request.getUri();
-//				// Get root directory path from server
-//				String rootDirectory = server.getRootDirectory();
-//				// Combine them together to form absolute file path
-//				File file = new File(rootDirectory + uri);
-//				// Check if the file exists
-//				if(file.exists()) {
-//					Boolean status = file.delete();
-//					
-//					if(status == true){
-//						// Lets create 200 OK response
-//						response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
-//					}else{
-//						response = HttpResponseFactory.create304NotModified(Protocol.CLOSE);
-//					}
-//				}
-//				else {
-//					// File does not exist so lets create 404 file not found code
-//					response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
-//				}
-//			}
-//////////////////Here is the POST
-//			else if(request.getMethod().equalsIgnoreCase(Protocol.POST)) {
-//
-//				System.out.println("we did a POST");
-//				// Handling GET request here
-//				// Get relative URI path from request
-//				String uri = request.getUri();
-//				// Get root directory path from server
-//				String rootDirectory = server.getRootDirectory();
-//				// Combine them together to form absolute file path
-//				File file = new File(rootDirectory + uri);
-//				// Check if the file exists
-//				if(file.exists()) {
-//					try{
-//						FileWriter writer = new FileWriter(file, true);
-//						writer.append(request.getBody());
-//						writer.close();
-//					}catch (IOException i){
-//						response = HttpResponseFactory.create304NotModified(Protocol.CLOSE);
-//					}
-//					response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
-//				}
-//				else {
-//					// File does not exist so lets create 404 file not found code
-//					response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
-//				}
-//			}
-////////////////Here is the PUT
-//			else if(request.getMethod().equalsIgnoreCase(Protocol.PUT)) {
-//				
-//				System.out.println("we did a PUT");
-//				// Handling GET request here
-//				// Get relative URI path from request
-//				String uri = request.getUri();
-//				// Get root directory path from server
-//				String rootDirectory = server.getRootDirectory();
-//				// Combine them together to form absolute file path
-//				File file = new File(rootDirectory + uri);
-//				// Check if the file exists
-//				if(file.exists()) {
-//					try{
-//						file.delete();
-//						FileWriter writer = new FileWriter(file);
-//						writer.append(request.getBody());
-//						writer.close();
-//					}catch (IOException i){
-//						response = HttpResponseFactory.create304NotModified(Protocol.CLOSE);
-//					}
-//					response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
-//				}
-//				else {
-//					// File does not exist so lets create 404 file not found code
-//					response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
-//				}
-//			}
-//			
-//			
-//			
-//		}
-//		catch(Exception e) {
-//			e.printStackTrace();
-//		}
+		if(file.exists())
+			response = staticFileHandling(request, response, file);
+		else{
+			//Handle Plugin URI
+			ArrayList<Plugin> plugins = null;
+			String[] partsOfURI = request.getUri().split("/");
+			boolean found = false;
+			for(Plugin p : plugins){
+				if(partsOfURI[1] == p.getPluginName()){
+					response = p.routeRequest(request);
+					found = true;
+					break;
+				}
+			}
+			if(!found)
+				response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
+		}
 		
-
 		// TODO: So far response could be null for protocol version mismatch.
 		// So this is a temporary patch for that problem and should be removed
 		// after a response object is created for protocol version mismatch.
@@ -295,5 +182,91 @@ public class ConnectionHandler implements Runnable {
 		// Get the end time
 		long end = System.currentTimeMillis();
 		this.server.incrementServiceTime(end-start);
+	}
+
+	private HttpResponse staticFileHandling(HttpRequest request,
+			HttpResponse response, File file) {
+		try {
+			// Fill in the code to create a response for version mismatch.
+			// You may want to use constants such as Protocol.VERSION, Protocol.NOT_SUPPORTED_CODE, and more.
+			// You can check if the version matches as follows
+			if(!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
+				// Here you checked that the "Protocol.VERSION" string is not equal to the  
+				// "request.version" string ignoring the case of the letters in both strings
+				// TODO: Fill in the rest of the code here
+			}
+			else if(request.getMethod().equalsIgnoreCase(Protocol.GET)) {
+//				Map<String, String> header = request.getHeader();
+//				String date = header.get("if-modified-since");
+//				String hostName = header.get("host");
+//				
+				// Handling GET request here
+				if(file.isDirectory()) {
+					// Look for default index.html file in a directory
+					String location = file.getAbsolutePath() + System.getProperty("file.separator") + Protocol.DEFAULT_FILE;
+					file = new File(location);
+					if(file.exists()) {
+						// Lets create 200 OK response
+						response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
+					}
+					else {
+						// File does not exist so lets create 404 file not found code
+						response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
+					}
+				}
+				else { // Its a file
+					// Lets create 200 OK response
+					response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
+				}
+			}
+////////////////Here is the DELETE
+			else if(request.getMethod().equalsIgnoreCase(Protocol.DELETE)){
+				
+				System.out.println("we did a DELETE");
+				// Handling GET request here
+				if(file.delete()){
+					// Lets create 200 OK response
+					response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
+				}else{
+					response = HttpResponseFactory.create304NotModified(Protocol.CLOSE);
+				}
+			}
+////////////////Here is the POST
+			else if(request.getMethod().equalsIgnoreCase(Protocol.POST)) {
+
+				System.out.println("we did a POST");
+				// Handling GET request here
+				try{
+					FileWriter writer = new FileWriter(file, true);
+					writer.append(request.getBody());
+					writer.close();
+				}catch (IOException i){
+					response = HttpResponseFactory.create304NotModified(Protocol.CLOSE);
+				}
+				response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
+			}
+//////////////Here is the PUT
+			else if(request.getMethod().equalsIgnoreCase(Protocol.PUT)) {
+				
+				System.out.println("we did a PUT");
+				// Handling GET request here
+				try{
+					file.delete();
+					FileWriter writer = new FileWriter(file);
+					writer.append(request.getBody());
+					writer.close();
+				}catch (IOException i){
+					response = HttpResponseFactory.create304NotModified(Protocol.CLOSE);
+				}
+				response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
+			}
+			
+			
+			
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		return response;
 	}
 }
