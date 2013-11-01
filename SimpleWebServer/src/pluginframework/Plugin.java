@@ -37,7 +37,7 @@ import protocol.HttpResponse;
  */
 public class Plugin {
 
-	private String directory;
+	protected String directory;
 	
 	public Plugin(String directory) {
 		this.directory = directory;
@@ -47,8 +47,8 @@ public class Plugin {
 		return null;
 	}
 	
-	public String getPluginName(){
-		return "";
-	}
+//	public String getPluginName(){
+//		return "";
+//	}
 	
 }
