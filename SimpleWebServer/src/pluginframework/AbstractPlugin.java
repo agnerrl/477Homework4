@@ -33,10 +33,6 @@ import java.util.HashMap;
 import protocol.HttpRequest;
 import protocol.HttpResponse;
 
-/**
- * 
- * @author Chandan R. Rupakheti (rupakhcr@clarkson.edu)
- */
 public abstract class AbstractPlugin {
 
 	protected String pluginName;

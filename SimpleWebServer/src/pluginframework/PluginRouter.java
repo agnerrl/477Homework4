@@ -29,8 +29,8 @@
 package pluginframework;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -40,16 +40,16 @@ import protocol.HttpResponse;
 import protocol.HttpResponseFactory;
 import protocol.Protocol;
 
-/**
- * 
- * @author Chandan R. Rupakheti (rupakhcr@clarkson.edu)
- */
 public class PluginRouter {
 
 	private HashMap<String, AbstractPlugin> pluginMapping;
 	private File pluginDirectory = new File("plugins");
 	private Timer pluginMonitor = new Timer();
-	private PluginLoader pluginLoader = new PluginLoader();
+	private ClassLoader pluginLoader = PluginRouter.class.getClassLoader();
+	private String pluginName;
+	private File config;
+	private Scanner scanner;
+	private Class<AbstractPlugin> pluginClass;
 
 	public PluginRouter() {
 		pluginMapping = new HashMap<String, AbstractPlugin>();
@@ -72,14 +72,20 @@ public class PluginRouter {
 	}
 
 	private void addPlugin() {
-		File files[] = pluginDirectory.listFiles();
-		String pluginPath = "";
-		File config;
-		for (File file : files) {
+		for (File file : pluginDirectory.listFiles()) {
 			if (file.isDirectory()) {
-				// grab name from .config file
-				// load plugin class
-				// add to map
+				config = new File(file.getPath() + "/.config");
+				if (config.exists()) {
+					try {
+						scanner = new Scanner(config);
+						pluginName = scanner.nextLine();
+						scanner.close();
+						pluginClass = (Class<AbstractPlugin>) pluginLoader.loadClass(pluginName);
+						pluginMapping.put(pluginName, pluginClass.newInstance());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 	}
