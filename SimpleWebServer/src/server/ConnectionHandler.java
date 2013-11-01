@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.omg.CORBA.RepositoryIdHelper;
 
@@ -145,17 +146,11 @@ public class ConnectionHandler implements Runnable {
 			response = staticFileHandling(request, response, file);
 		else{
 			//Handle Plugin URI
-			ArrayList<Plugin> plugins = null;
+			HashMap<String, Plugin> plugins = null;
 			String[] partsOfURI = request.getUri().split("/");
-			boolean found = false;
-			for(Plugin p : plugins){
-				if(partsOfURI[1] == p.getPluginName()){
-					response = p.routeRequest(request);
-					found = true;
-					break;
-				}
-			}
-			if(!found)
+			if(plugins.containsKey(partsOfURI[1]))
+				response = plugins.get(partsOfURI[1]).routeRequest(request);
+			else
 				response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
 		}
 		
