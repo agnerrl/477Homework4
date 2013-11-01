@@ -35,10 +35,35 @@ import protocol.HttpResponse;
  * 
  * @author Chandan R. Rupakheti (rupakhcr@clarkson.edu)
  */
+<<<<<<< HEAD:SimpleWebServer/src/pluginframework/AbstractServlet.java
 public abstract class AbstractServlet {
 	
 //	void init();
 	abstract HttpResponse execute(HttpRequest request);
 //	void destroy();
+=======
+public abstract class IServlet {
+	
+	void init() {}
+	public HttpResponse execute(HttpRequest request) {
+		String method = request.getMethod();
+		HttpResponse out = null;
+		if(method == "GET")
+			out = doGet(request);
+		else if(method == "POST")
+			out = doPost(request);
+		else if(method == "PUT")
+			out = doPut(request);
+		else if(method == "DELETE")
+			out = doDelete(request);
+		return out;
+	}
+
+	HttpResponse doGet(HttpRequest request) { return null; }
+	HttpResponse doPost(HttpRequest request) { return null; }
+	HttpResponse doPut(HttpRequest request) { return null; }
+	HttpResponse doDelete(HttpRequest request) { return null; }
+	void destroy() {}
+>>>>>>> e8279497cc9f24a78f6e7dfe63ac66442de28a7e:SimpleWebServer/src/pluginframework/IServlet.java
 	
 }

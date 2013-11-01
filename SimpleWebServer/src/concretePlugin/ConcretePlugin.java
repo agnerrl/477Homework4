@@ -1,6 +1,6 @@
 /*
- * ServletRegistry.java
- * Oct 31, 2013
+ * ConcretePlugin.java
+ * Nov 1, 2013
  *
  * Simple Web Server (SWS) for EE407/507 and CS455/555
  * 
@@ -26,14 +26,21 @@
  * http://clarkson.edu/~rupakhcr
  */
  
-package pluginframework;
+package concretePlugin;
 
+import java.io.File;
 import java.util.HashMap;
+
+import pluginframework.IServlet;
+import pluginframework.Plugin;
+import protocol.HttpRequest;
+import protocol.HttpResponse;
 
 /**
  * 
  * @author Chandan R. Rupakheti (rupakhcr@clarkson.edu)
  */
+<<<<<<< HEAD:SimpleWebServer/src/pluginframework/ServletRegistry.java
 public class ServletRegistry {
 	
 	private ServletRegistry registry;
@@ -41,14 +48,21 @@ public class ServletRegistry {
 	
 	private ServletRegistry() {
 		
+=======
+public class ConcretePlugin extends Plugin{
+	IServlet servlet;
+
+	/**
+	 * @param directory
+	 */
+	public ConcretePlugin(String directory) {
+		super(directory);
+		this.servlet = new ConcreteServlet(directory);
+>>>>>>> e8279497cc9f24a78f6e7dfe63ac66442de28a7e:SimpleWebServer/src/concretePlugin/ConcretePlugin.java
 	}
 	
-	public ServletRegistry instance() {
-		if(null == registry){
-			return new ServletRegistry();
-		} else {
-			return registry;
-		}
+	public HttpResponse routeRequest(HttpRequest request){
+		return this.servlet.execute(request);
 	}
-	
+
 }

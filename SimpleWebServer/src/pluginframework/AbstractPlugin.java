@@ -1,5 +1,5 @@
 /*
- * IPlugin.java
+ * AbstractPlugin.java
  * Oct 31, 2013
  *
  * Simple Web Server (SWS) for EE407/507 and CS455/555
@@ -25,7 +25,7 @@
  * NY 13699-5722
  * http://clarkson.edu/~rupakhcr
  */
- 
+
 package pluginframework;
 
 import java.util.HashMap;
@@ -41,12 +41,12 @@ public abstract class AbstractPlugin {
 
 	protected String pluginName;
 	protected HashMap<String, AbstractServlet> servletMapping;
-	
+
 	public HttpResponse routeToServlet(HttpRequest request) {
 		return servletMapping.get(request.getMethod()).execute(request);
 	}
-	
-	public String getPluginName(){
+
+	public String getPluginName() {
 		return pluginName;
 	}
 }
