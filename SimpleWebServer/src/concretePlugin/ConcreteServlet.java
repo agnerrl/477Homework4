@@ -1,5 +1,5 @@
 /*
- * ConcretePlugin.java
+ * ConcreteServlet.java
  * Nov 1, 2013
  *
  * Simple Web Server (SWS) for EE407/507 and CS455/555
@@ -28,31 +28,62 @@
  
 package concretePlugin;
 
-import java.io.File;
+import java.io.*;
 import java.util.HashMap;
 
 import pluginframework.IServlet;
-import pluginframework.Plugin;
 import protocol.HttpRequest;
 import protocol.HttpResponse;
 
-/**
- * 
- * @author Chandan R. Rupakheti (rupakhcr@clarkson.edu)
- */
-public class ConcretePlugin extends Plugin{
-	IServlet servlet;
+public class ConcreteServlet extends IServlet {
+	private String directory;
 
-	/**
-	 * @param directory
-	 */
-	public ConcretePlugin(String directory) {
-		super(directory);
-		this.servlet = new ConcreteServlet(directory);
+	public ConcreteServlet(String directory){
+		this.directory = directory;
 	}
 	
-	public HttpResponse routeRequest(HttpRequest request){
-		return this.servlet.execute(request);
+	/**
+	 * @param request
+	 * @return
+	 */
+	private HttpResponse doDelete(HttpRequest request) {
+		return processRequest("DELETE was processed");
 	}
 
+	/**
+	 * @return
+	 */
+	private HttpResponse processRequest(String message) {
+		HashMap<String, String> map = new HashMap<String, String>();
+		map.put("header", "value");
+		map.put("header2", "value2");
+		File file = new File(this.directory + "/index.html");
+		HttpResponse out = new HttpResponse("HTTP/1.1", 200, message, map, file);
+		return out;
+	}
+
+	/**
+	 * @param request
+	 * @return
+	 */
+	private HttpResponse doPut(HttpRequest request) {
+		return processRequest("PUT was processed");
+	}
+
+	/**
+	 * @param request
+	 * @return
+	 */
+	private HttpResponse doPost(HttpRequest request) {
+		return processRequest("POST was processed");
+	}
+
+	/**
+	 * @param request
+	 * @return
+	 */
+	private HttpResponse doGet(HttpRequest request) {
+		return processRequest("GET was processed");
+	}
 }
+
