@@ -27,12 +27,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.omg.CORBA.RepositoryIdHelper;
-
-import pluginframework.Plugin;
+import pluginframework.AbstractPlugin;
+import pluginframework.PluginRouter;
 import protocol.HttpRequest;
 import protocol.HttpResponse;
 import protocol.HttpResponseFactory;
@@ -50,10 +48,12 @@ import protocol.ProtocolException;
 public class ConnectionHandler implements Runnable {
 	private Server server;
 	private Socket socket;
+	private PluginRouter pluginRouter;
 	
 	public ConnectionHandler(Server server, Socket socket) {
 		this.server = server;
 		this.socket = socket;
+		pluginRouter = new PluginRouter();
 	}
 	
 	/**
@@ -145,13 +145,7 @@ public class ConnectionHandler implements Runnable {
 		if(file.exists())
 			response = staticFileHandling(request, response, file);
 		else{
-			//Handle Plugin URI
-			HashMap<String, Plugin> plugins = null;
-			String[] partsOfURI = request.getUri().split("/");
-			if(plugins.containsKey(partsOfURI[1]))
-				response = plugins.get(partsOfURI[1]).routeRequest(request);
-			else
-				response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
+			response = pluginRouter.routeToPlugin(request);
 		}
 		
 		// TODO: So far response could be null for protocol version mismatch.

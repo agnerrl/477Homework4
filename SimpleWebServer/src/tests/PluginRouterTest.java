@@ -1,5 +1,16 @@
+package tests;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
+
+import pluginframework.PluginRouter;
+
 /*
- * ServletRegistry.java
+ * PluginRouterTest.java
  * Oct 31, 2013
  *
  * Simple Web Server (SWS) for EE407/507 and CS455/555
@@ -25,30 +36,38 @@
  * NY 13699-5722
  * http://clarkson.edu/~rupakhcr
  */
- 
-package pluginframework;
-
-import java.util.HashMap;
 
 /**
  * 
  * @author Chandan R. Rupakheti (rupakhcr@clarkson.edu)
  */
-public class ServletRegistry {
-	
-	private ServletRegistry registry;
-	private HashMap<String, AbstractServlet> servletMapping;
-	
-	private ServletRegistry() {
-		
+public class PluginRouterTest {
+	private PluginRouter pluginTester = new PluginRouter();
+
+	/**
+	 * Test method for {@link pluginframework.PluginRouter#PluginRouter()}.
+	 */
+	@Test
+	public void testPluginRouter() {
+		fail("Not yet implemented");
 	}
-	
-	public ServletRegistry instance() {
-		if(null == registry){
-			return new ServletRegistry();
-		} else {
-			return registry;
-		}
+
+	/**
+	 * Test method for {@link pluginframework.PluginRouter#routeToPlugin(protocol.HttpRequest)}.
+	 */
+	@Test
+	public void testRouteMessage() {
+		fail("Not yet implemented");
 	}
-	
+
+	/**
+	 * Test method for {@link pluginframework.PluginRouter#addPlugin()}.
+	 */
+	@Test
+	public void testAddPlugin() {
+		ArrayList<String> fileNames = pluginTester.addPlugin();
+		System.out.println(fileNames.get(0));
+		Assert.assertNotNull(fileNames);
+	}
+
 }

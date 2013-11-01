@@ -1,5 +1,5 @@
 /*
- * ServletRegistry.java
+ * IPlugin.java
  * Oct 31, 2013
  *
  * Simple Web Server (SWS) for EE407/507 and CS455/555
@@ -30,25 +30,23 @@ package pluginframework;
 
 import java.util.HashMap;
 
+import protocol.HttpRequest;
+import protocol.HttpResponse;
+
 /**
  * 
  * @author Chandan R. Rupakheti (rupakhcr@clarkson.edu)
  */
-public class ServletRegistry {
+public abstract class AbstractPlugin {
+
+	protected String pluginName;
+	protected HashMap<String, AbstractServlet> servletMapping;
 	
-	private ServletRegistry registry;
-	private HashMap<String, AbstractServlet> servletMapping;
-	
-	private ServletRegistry() {
-		
+	public HttpResponse routeToServlet(HttpRequest request) {
+		return servletMapping.get(request.getMethod()).execute(request);
 	}
 	
-	public ServletRegistry instance() {
-		if(null == registry){
-			return new ServletRegistry();
-		} else {
-			return registry;
-		}
+	public String getPluginName(){
+		return pluginName;
 	}
-	
 }

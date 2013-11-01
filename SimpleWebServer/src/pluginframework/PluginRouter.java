@@ -25,48 +25,62 @@
  * NY 13699-5722
  * http://clarkson.edu/~rupakhcr
  */
- 
+
 package pluginframework;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import protocol.HttpRequest;
+import protocol.HttpResponse;
+import protocol.HttpResponseFactory;
+import protocol.Protocol;
 
 /**
  * 
  * @author Chandan R. Rupakheti (rupakhcr@clarkson.edu)
  */
 public class PluginRouter {
-	
-	private HashMap<String, Plugin> pluginMapping;
-	//Testing to see if this works
-	private File directory = new File("C:/Users/agnerrl/Desktop/HW4plugin");
-	public PluginRouter(){
-		pluginMapping = new HashMap<String, Plugin>();
+
+	private HashMap<String, AbstractPlugin> pluginMapping;
+	private File pluginDirectory = new File("plugins");
+	private Timer pluginMonitor = new Timer();
+	private PluginLoader pluginLoader = new PluginLoader();
+
+	public PluginRouter() {
+		pluginMapping = new HashMap<String, AbstractPlugin>();
+		pluginMonitor.scheduleAtFixedRate(new TimerTask() {
+			@Override
+			public void run() {
+				addPlugin();
+			}
+		}, 0, 5000);
 	}
-	
-	public void routeMessage(HttpRequest request) {
+
+	public HttpResponse routeToPlugin(HttpRequest request) {
 		StringTokenizer tokenizer = new StringTokenizer(request.getUri(), "/");
-		Plugin plugin = pluginMapping.get(tokenizer.nextToken());
-		if(null == plugin) {
-			// return bad request
+		AbstractPlugin plugin = pluginMapping.get(tokenizer.nextToken());
+		if (null == plugin) {
+			return HttpResponseFactory.create404NotFound(Protocol.CLOSE);
 		} else {
-			plugin.routeRequest(request);
+			return plugin.routeToServlet(request);
 		}
 	}
-	
-	public ArrayList<String> addPlugin() {
-		// poll folder every 5 seconds?
-		// check for new plugins
-		// add to pluginMapping
-		File files[] = directory.listFiles();
-		ArrayList<String> testing = new ArrayList<String>();
-		for (File file : files){
-			testing.add(file.getName());
+
+	private void addPlugin() {
+		File files[] = pluginDirectory.listFiles();
+		String pluginPath = "";
+		File config;
+		for (File file : files) {
+			if (file.isDirectory()) {
+				// grab name from .config file
+				// load plugin class
+				// add to map
+			}
 		}
-		return testing;
 	}
 }

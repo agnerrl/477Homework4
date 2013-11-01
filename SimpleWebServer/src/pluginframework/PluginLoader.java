@@ -1,6 +1,6 @@
 /*
- * ServletRegistry.java
- * Oct 31, 2013
+ * PluginLoader.java
+ * Nov 1, 2013
  *
  * Simple Web Server (SWS) for EE407/507 and CS455/555
  * 
@@ -28,27 +28,10 @@
  
 package pluginframework;
 
-import java.util.HashMap;
-
 /**
  * 
  * @author Chandan R. Rupakheti (rupakhcr@clarkson.edu)
  */
-public class ServletRegistry {
-	
-	private ServletRegistry registry;
-	private HashMap<String, AbstractServlet> servletMapping;
-	
-	private ServletRegistry() {
-		
-	}
-	
-	public ServletRegistry instance() {
-		if(null == registry){
-			return new ServletRegistry();
-		} else {
-			return registry;
-		}
-	}
-	
+public class PluginLoader extends ClassLoader {
+
 }
