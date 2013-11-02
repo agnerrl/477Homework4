@@ -28,62 +28,37 @@
  
 package concretePlugin;
 
-import java.io.*;
+import java.io.File;
 import java.util.HashMap;
 
-import pluginframework.IServlet;
+import pluginframework.AbstractServlet;
 import protocol.HttpRequest;
 import protocol.HttpResponse;
 
-public class ConcreteServlet extends IServlet {
-	private String directory;
+public class ConcreteServlet extends AbstractServlet {
 
-	public ConcreteServlet(String directory){
-		this.directory = directory;
-	}
-	
-	/**
-	 * @param request
-	 * @return
-	 */
-	private HttpResponse doDelete(HttpRequest request) {
-		return processRequest("DELETE was processed");
+	public ConcreteServlet(){
 	}
 
-	/**
-	 * @return
-	 */
-	private HttpResponse processRequest(String message) {
-		HashMap<String, String> map = new HashMap<String, String>();
-		map.put("header", "value");
-		map.put("header2", "value2");
-		File file = new File(this.directory + "/index.html");
-		HttpResponse out = new HttpResponse("HTTP/1.1", 200, message, map, file);
-		return out;
-	}
+//	/**
+//	 * @return
+//	 */
+//	private HttpResponse processRequest(String message) {
+//		HashMap<String, String> map = new HashMap<String, String>();
+//		map.put("header", "value");
+//		map.put("header2", "value2");
+//		File file = new File(this.directory + "/index.html");
+//		HttpResponse out = new HttpResponse("HTTP/1.1", 200, message, map, file);
+//		return out;
+//	}
 
-	/**
-	 * @param request
-	 * @return
+	/* (non-Javadoc)
+	 * @see pluginframework.AbstractServlet#execute(protocol.HttpRequest)
 	 */
-	private HttpResponse doPut(HttpRequest request) {
-		return processRequest("PUT was processed");
-	}
-
-	/**
-	 * @param request
-	 * @return
-	 */
-	private HttpResponse doPost(HttpRequest request) {
-		return processRequest("POST was processed");
-	}
-
-	/**
-	 * @param request
-	 * @return
-	 */
-	private HttpResponse doGet(HttpRequest request) {
-		return processRequest("GET was processed");
+	@Override
+	public HttpResponse execute(HttpRequest request) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
 

@@ -48,12 +48,10 @@ import protocol.ProtocolException;
 public class ConnectionHandler implements Runnable {
 	private Server server;
 	private Socket socket;
-	private PluginRouter pluginRouter;
 	
 	public ConnectionHandler(Server server, Socket socket) {
 		this.server = server;
 		this.socket = socket;
-		pluginRouter = new PluginRouter();
 	}
 	
 	/**
@@ -145,7 +143,7 @@ public class ConnectionHandler implements Runnable {
 		if(file.exists())
 			response = staticFileHandling(request, response, file);
 		else{
-			response = pluginRouter.routeToPlugin(request);
+			response = server.getPluginRouter().routeToPlugin(request);
 		}
 		
 		// TODO: So far response could be null for protocol version mismatch.

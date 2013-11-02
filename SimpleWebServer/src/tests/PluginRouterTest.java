@@ -65,9 +65,7 @@ public class PluginRouterTest {
 	 */
 	@Test
 	public void testAddPlugin() {
-		ArrayList<String> fileNames = pluginTester.addPlugin();
-		System.out.println(fileNames.get(0));
-		Assert.assertNotNull(fileNames);
+		fail("Not yet implemented");
 	}
 
 }

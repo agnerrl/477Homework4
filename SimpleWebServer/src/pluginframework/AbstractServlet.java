@@ -33,7 +33,7 @@ import protocol.HttpResponse;
 
 public abstract class AbstractServlet {
 
-	abstract HttpResponse execute(HttpRequest request);
+	public abstract HttpResponse execute(HttpRequest request);
 	void init() {}
 	void destroy() {}	
 }

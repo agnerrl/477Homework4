@@ -27,6 +27,8 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import pluginframework.PluginRouter;
+
 /**
  * This represents a welcoming server for the incoming
  * TCP request from a HTTP client such as a web browser. 
@@ -38,7 +40,8 @@ public class Server implements Runnable {
 	private int port;
 	private boolean stop;
 	private ServerSocket welcomeSocket;
-	
+	private PluginRouter pluginRouter;
+
 	private long connections;
 	private long serviceTime;
 	
@@ -54,6 +57,7 @@ public class Server implements Runnable {
 		this.connections = 0;
 		this.serviceTime = 0;
 		this.window = window;
+		pluginRouter = new PluginRouter();
 	}
 
 	/**
@@ -73,6 +77,13 @@ public class Server implements Runnable {
 	 */
 	public int getPort() {
 		return port;
+	}
+	
+	/**
+	 * @return the pluginRouter
+	 */
+	public PluginRouter getPluginRouter() {
+		return pluginRouter;
 	}
 	
 	/**

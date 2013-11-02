@@ -38,7 +38,7 @@ public abstract class AbstractPlugin {
 	protected String pluginName;
 	protected HashMap<String, AbstractServlet> servletMapping;
 
-	public HttpResponse routeToServlet(HttpRequest request) {
+	final public HttpResponse routeToServlet(HttpRequest request) {
 		return servletMapping.get(request.getMethod()).execute(request);
 	}
 

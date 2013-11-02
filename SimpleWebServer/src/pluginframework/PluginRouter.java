@@ -58,7 +58,7 @@ public class PluginRouter {
 			public void run() {
 				addPlugin();
 			}
-		}, 0, 5000);
+		}, 0, 2500);
 	}
 
 	public HttpResponse routeToPlugin(HttpRequest request) {
@@ -72,18 +72,23 @@ public class PluginRouter {
 	}
 
 	private void addPlugin() {
-		for (File file : pluginDirectory.listFiles()) {
-			if (file.isDirectory()) {
-				config = new File(file.getPath() + "/.config");
-				if (config.exists()) {
-					try {
-						scanner = new Scanner(config);
-						pluginName = scanner.nextLine();
-						scanner.close();
-						pluginClass = (Class<AbstractPlugin>) pluginLoader.loadClass(pluginName);
-						pluginMapping.put(pluginName, pluginClass.newInstance());
-					} catch (Exception e) {
-						e.printStackTrace();
+		File[] files = pluginDirectory.listFiles();
+		if (null != files) {
+			for (File file : files) {
+				if (file.isDirectory()) {
+					config = new File(file.getPath() + "/.config");
+					if (config.exists()) {
+						try {
+							scanner = new Scanner(config);
+							pluginName = scanner.nextLine();
+							scanner.close();
+							pluginClass = (Class<AbstractPlugin>) pluginLoader
+									.loadClass(pluginName);
+							pluginMapping.put(pluginName,
+									pluginClass.newInstance());
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 				}
 			}
