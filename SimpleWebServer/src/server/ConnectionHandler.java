@@ -21,21 +21,14 @@
  
 package server;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.HashMap;
 
-import pluginframework.AbstractPlugin;
-import pluginframework.PluginRouter;
 import protocol.HttpRequest;
 import protocol.HttpResponse;
 import protocol.HttpResponseFactory;
 import protocol.Protocol;
-import protocol.ProtocolException;
 
 /**
  * This class is responsible for handling a incoming request
@@ -65,11 +58,10 @@ public class ConnectionHandler implements Runnable {
 	/**
 	 * The entry point for connection handler. It first parses
 	 * incoming request and creates a {@link HttpRequest} object,
-	 * then it creates an appropriate {@link HttpResponse} object
-	 * and sends the response back to the client (web browser).
+	 * then either passes the request to a plugin or handles the
+	 * request statically based on the URI of the request. 
 	 */
 	public void run() {
-		// Get the start time
 		long start = System.currentTimeMillis();
 		
 		InputStream inStream = null;
@@ -81,178 +73,72 @@ public class ConnectionHandler implements Runnable {
 		}
 		catch(Exception e) {
 			// Cannot do anything if we have exception reading input or output stream
-			// May be have text to log this for further analysis?
 			e.printStackTrace();
-			
-			// Increment number of connections by 1
 			server.incrementConnections(1);
-			// Get the end time
 			long end = System.currentTimeMillis();
 			this.server.incrementServiceTime(end-start);
 			return;
 		}
 		
-		// At this point we have the input and output stream of the socket
-		// Now lets create a HttpRequest object
 		HttpRequest request = null;
 		HttpResponse response = null;
 		try {
 			request = HttpRequest.read(inStream);
-//			System.out.println(request);
-		}
-		catch(ProtocolException pe) {
-			// We have some sort of protocol exception. Get its status code and create response
-			// We know only two kind of exception is possible inside fromInputStream
-			// Protocol.BAD_REQUEST_CODE and Protocol.NOT_SUPPORTED_CODE
-			int status = pe.getStatus();
-			if(status == Protocol.BAD_REQUEST_CODE) {
-				response = HttpResponseFactory.create400BadRequest(Protocol.CLOSE);
-			}
-			// TODO: Handle version not supported code as well
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			// For any other error, we will create bad request response as well
 			response = HttpResponseFactory.create400BadRequest(Protocol.CLOSE);
 		}
 		
 		if(response != null) {
-			// Means there was an error, now write the response object to the socket
 			try {
 				response.write(outStream);
-//				System.out.println(response);
 			}
 			catch(Exception e){
-				// We will ignore this exception
 				e.printStackTrace();
 			}
 
-			// Increment number of connections by 1
 			server.incrementConnections(1);
-			// Get the end time
 			long end = System.currentTimeMillis();
 			this.server.incrementServiceTime(end-start);
 			return;
 		}
 		
-		File file = new File(server.getRootDirectory() + request.getUri());
+		// attempt to have a plugin handle the request
+		response = server.getPluginRouter().routeToPlugin(request, server);
 		
-		// We reached here means no error so far, so lets process further
-		response = staticFileHandling(request, response, file);
-		
-		if(file.exists())
-			response = staticFileHandling(request, response, file);
-		else{
-			response = server.getPluginRouter().routeToPlugin(request);
-		}
-		
-		// TODO: So far response could be null for protocol version mismatch.
-		// So this is a temporary patch for that problem and should be removed
-		// after a response object is created for protocol version mismatch.
+		// handle the request statically if there was no plugin for it
 		if(response == null) {
-			response = HttpResponseFactory.create400BadRequest(Protocol.CLOSE);
+			response = staticFileHandling(request);
 		}
 		
-		try{
-			// Write response and we are all done so close the socket
+		try {
 			response.write(outStream);
-//			System.out.println(response);
 			socket.close();
 		}
-		catch(Exception e){
-			// We will ignore this exception
+		catch (Exception e){
 			e.printStackTrace();
 		} 
 		
-		// Increment number of connections by 1
 		server.incrementConnections(1);
-		// Get the end time
 		long end = System.currentTimeMillis();
 		this.server.incrementServiceTime(end-start);
 	}
 
-	private HttpResponse staticFileHandling(HttpRequest request,
-			HttpResponse response, File file) {
+	private HttpResponse staticFileHandling(HttpRequest request) {
+		HttpResponse response = null;
 		try {
-			// Fill in the code to create a response for version mismatch.
-			// You may want to use constants such as Protocol.VERSION, Protocol.NOT_SUPPORTED_CODE, and more.
-			// You can check if the version matches as follows
-			if(!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
-				// Here you checked that the "Protocol.VERSION" string is not equal to the  
-				// "request.version" string ignoring the case of the letters in both strings
-				// TODO: Fill in the rest of the code here
+			// only handle requests that match the protocol version
+			if(request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
+				response = Server.getDefaultServletMapping().get(request.getMethod()).execute(request, server);
 			}
-			else if(request.getMethod().equalsIgnoreCase(Protocol.GET)) {
-//				Map<String, String> header = request.getHeader();
-//				String date = header.get("if-modified-since");
-//				String hostName = header.get("host");
-//				
-				// Handling GET request here
-				if(file.isDirectory()) {
-					// Look for default index.html file in a directory
-					String location = file.getAbsolutePath() + System.getProperty("file.separator") + Protocol.DEFAULT_FILE;
-					file = new File(location);
-					if(file.exists()) {
-						// Lets create 200 OK response
-						response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
-					}
-					else {
-						// File does not exist so lets create 404 file not found code
-						response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
-					}
-				}
-				else { // Its a file
-					// Lets create 200 OK response
-					response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
-				}
+			if(null == response) {
+				response = HttpResponseFactory.create400BadRequest(Protocol.CLOSE);
 			}
-////////////////Here is the DELETE
-			else if(request.getMethod().equalsIgnoreCase(Protocol.DELETE)){
-				
-				System.out.println("we did a DELETE");
-				// Handling GET request here
-				if(file.delete()){
-					// Lets create 200 OK response
-					response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
-				}else{
-					response = HttpResponseFactory.create304NotModified(Protocol.CLOSE);
-				}
-			}
-////////////////Here is the POST
-			else if(request.getMethod().equalsIgnoreCase(Protocol.POST)) {
-
-				System.out.println("we did a POST");
-				// Handling GET request here
-				try{
-					FileWriter writer = new FileWriter(file, true);
-					writer.append(request.getBody());
-					writer.close();
-				}catch (IOException i){
-					response = HttpResponseFactory.create304NotModified(Protocol.CLOSE);
-				}
-				response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
-			}
-//////////////Here is the PUT
-			else if(request.getMethod().equalsIgnoreCase(Protocol.PUT)) {
-				
-				System.out.println("we did a PUT");
-				// Handling GET request here
-				try{
-					file.delete();
-					FileWriter writer = new FileWriter(file);
-					writer.append(request.getBody());
-					writer.close();
-				}catch (IOException i){
-					response = HttpResponseFactory.create304NotModified(Protocol.CLOSE);
-				}
-				response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
-			}
-			
-			
-			
 		}
 		catch(Exception e) {
 			e.printStackTrace();
+			response = HttpResponseFactory.create400BadRequest(Protocol.CLOSE);
 		}
 		return response;
 	}

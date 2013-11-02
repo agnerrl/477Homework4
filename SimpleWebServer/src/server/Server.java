@@ -26,7 +26,9 @@ import gui.WebServer;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 
+import pluginframework.AbstractServlet;
 import pluginframework.PluginRouter;
 
 /**
@@ -41,6 +43,7 @@ public class Server implements Runnable {
 	private boolean stop;
 	private ServerSocket welcomeSocket;
 	private PluginRouter pluginRouter;
+	private static HashMap<String, AbstractServlet> defaultServletMapping = createDefaultServletMapping();
 
 	private long connections;
 	private long serviceTime;
@@ -57,7 +60,7 @@ public class Server implements Runnable {
 		this.connections = 0;
 		this.serviceTime = 0;
 		this.window = window;
-		pluginRouter = new PluginRouter();
+		this.pluginRouter = new PluginRouter();
 	}
 
 	/**
@@ -128,14 +131,14 @@ public class Server implements Runnable {
 	public void run() {
 		try {
 			this.welcomeSocket = new ServerSocket(port);
-			
+	
 			// Now keep welcoming new connections until stop flag is set to true
 			while(true) {
 				// Listen for incoming socket connection
-				// This method block until somebody makes a request
+				// This method blocks until somebody makes a request
 				Socket connectionSocket = this.welcomeSocket.accept();
 				
-				// Come out of the loop if the stop flag is set
+				// Exit the loop if the stop flag is set
 				if(this.stop)
 					break;
 				
@@ -157,26 +160,43 @@ public class Server implements Runnable {
 		if(this.stop)
 			return;
 		
-		// Set the stop flag to be true
 		this.stop = true;
 		try {
 			// This will force welcomeSocket to come out of the blocked accept() method 
 			// in the main loop of the start() method
 			Socket socket = new Socket(InetAddress.getLocalHost(), port);
-			
-			// We do not have any other job for this socket so just close it
 			socket.close();
 		}
 		catch(Exception e){}
 	}
 	
 	/**
-	 * Checks if the server is stopeed or not.
-	 * @return
+	 * Checks if the server is stopped or not.
+	 * @return true if the server is stopped, false otherwise
 	 */
-	public boolean isStoped() {
+	public boolean isStopped() {
 		if(this.welcomeSocket != null)
 			return this.welcomeSocket.isClosed();
 		return true;
+	}
+	
+	/**
+	 * Creates the mapping of request methods to default servlets. 
+	 * @return new default mapping of request methods to servlets.
+	 */
+	private static HashMap<String, AbstractServlet> createDefaultServletMapping() {
+		HashMap<String, AbstractServlet> defaultMapping = new HashMap<String, AbstractServlet>();
+		defaultMapping.put("GET", new DefaultGetServlet());
+		defaultMapping.put("PUT", new DefaultPutServlet());
+		defaultMapping.put("POST", new DefaultPostServlet());
+		defaultMapping.put("DELETE", new DefaultDeleteServlet());
+		return defaultMapping;
+	}
+
+	/**
+	 * @return the defaultServletMapping
+	 */
+	public static HashMap<String, AbstractServlet> getDefaultServletMapping() {
+		return defaultServletMapping;
 	}
 }

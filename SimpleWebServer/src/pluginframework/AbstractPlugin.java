@@ -32,14 +32,15 @@ import java.util.HashMap;
 
 import protocol.HttpRequest;
 import protocol.HttpResponse;
+import server.Server;
 
 public abstract class AbstractPlugin {
 
 	protected String pluginName;
 	protected HashMap<String, AbstractServlet> servletMapping;
 
-	final public HttpResponse routeToServlet(HttpRequest request) {
-		return servletMapping.get(request.getMethod()).execute(request);
+	final public HttpResponse routeToServlet(HttpRequest request, Server server) {
+		return servletMapping.get(request.getMethod()).execute(request, server);
 	}
 
 	public String getPluginName() {

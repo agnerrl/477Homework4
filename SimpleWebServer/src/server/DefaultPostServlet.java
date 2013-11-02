@@ -1,6 +1,6 @@
 /*
- * IServlet.java
- * Oct 31, 2013
+ * DefaultGetServlet.java
+ * Nov 2, 2013
  *
  * Simple Web Server (SWS) for EE407/507 and CS455/555
  * 
@@ -26,15 +26,40 @@
  * http://clarkson.edu/~rupakhcr
  */
  
-package pluginframework;
+package server;
 
+import java.io.File;
+import java.io.FileWriter;
+
+import pluginframework.AbstractServlet;
 import protocol.HttpRequest;
 import protocol.HttpResponse;
-import server.Server;
+import protocol.HttpResponseFactory;
+import protocol.Protocol;
 
-public abstract class AbstractServlet {
+public class DefaultPostServlet extends AbstractServlet {
 
-	public abstract HttpResponse execute(HttpRequest request, Server server);
-	void init() {}
-	void destroy() {}	
+	/* (non-Javadoc)
+	 * @see pluginframework.AbstractServlet#execute(protocol.HttpRequest, server.Server)
+	 */
+	@Override
+	public HttpResponse execute(HttpRequest request, Server server) {
+		HttpResponse response = null;
+		String uri = request.getUri();
+		String rootDirectory = server.getRootDirectory();
+		File file = new File(rootDirectory + uri);
+		FileWriter writer;
+		try{
+			writer = new FileWriter(file, true);
+			// appends body of the request to the file contents
+			writer.append(request.getBody());
+			writer.close();
+			response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			response = HttpResponseFactory.create400BadRequest(Protocol.CLOSE);
+		}
+		return response;
+	}
 }

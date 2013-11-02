@@ -37,13 +37,12 @@ import java.util.TimerTask;
 
 import protocol.HttpRequest;
 import protocol.HttpResponse;
-import protocol.HttpResponseFactory;
-import protocol.Protocol;
+import server.Server;
 
 public class PluginRouter {
 
 	private HashMap<String, AbstractPlugin> pluginMapping;
-	private File pluginDirectory = new File("plugins");
+	private File pluginDirectory = new File("..\\plugins");
 	private Timer pluginMonitor = new Timer();
 	private ClassLoader pluginLoader = PluginRouter.class.getClassLoader();
 	private String pluginName;
@@ -61,13 +60,13 @@ public class PluginRouter {
 		}, 0, 2500);
 	}
 
-	public HttpResponse routeToPlugin(HttpRequest request) {
+	public HttpResponse routeToPlugin(HttpRequest request, Server server) {
 		StringTokenizer tokenizer = new StringTokenizer(request.getUri(), "/");
 		AbstractPlugin plugin = pluginMapping.get(tokenizer.nextToken());
 		if (null == plugin) {
-			return HttpResponseFactory.create404NotFound(Protocol.CLOSE);
+			return null;
 		} else {
-			return plugin.routeToServlet(request);
+			return plugin.routeToServlet(request, server);
 		}
 	}
 
