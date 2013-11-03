@@ -29,11 +29,16 @@
 package pluginframework;
 
 import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import protocol.HttpRequest;
 import protocol.HttpResponse;
@@ -70,6 +75,7 @@ public class PluginRouter {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void addPlugin() {
 		File[] files = pluginDirectory.listFiles();
 		if (null != files) {
@@ -79,11 +85,35 @@ public class PluginRouter {
 					if (config.exists()) {
 						try {
 							scanner = new Scanner(config);
+							String pluginJarDirectory = file.getPath() + "\\";
 							pluginName = scanner.nextLine();
 							scanner.close();
-							pluginClass = (Class<AbstractPlugin>) pluginLoader
-									.loadClass(pluginName);
-							pluginMapping.put(pluginName,
+							// /
+							String pluginTitle = pluginName.substring(0,
+									pluginName.length() - 3);
+
+							pluginTitle = pluginTitle.replace('/', '.');
+							// /
+							JarFile jarFile = new JarFile(pluginJarDirectory+pluginName);
+							Enumeration e = jarFile.entries();
+
+							URL[] urls = { new URL("jar:file:" + pluginJarDirectory
+									+ pluginName + "!/") };
+							ClassLoader cl = URLClassLoader.newInstance(urls);
+
+							while (e.hasMoreElements()) {
+								JarEntry je = (JarEntry) e.nextElement();
+
+								if (je.getName() == pluginName) {
+									break;
+								}
+							}
+
+							pluginClass = (Class<AbstractPlugin>) cl
+									.loadClass(pluginTitle);
+							// (Class<AbstractPlugin>) pluginLoader
+							// .loadClass(pluginName);
+							pluginMapping.put(pluginTitle,
 									pluginClass.newInstance());
 						} catch (Exception e) {
 							e.printStackTrace();
