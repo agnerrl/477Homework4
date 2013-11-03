@@ -31,29 +31,18 @@ package concreteplugin;
 import pluginframework.AbstractServlet;
 import protocol.HttpRequest;
 import protocol.HttpResponse;
+import server.Server;
 
 public class ConcreteServlet extends AbstractServlet {
 
 	public ConcreteServlet(){
 	}
 
-//	/**
-//	 * @return
-//	 */
-//	private HttpResponse processRequest(String message) {
-//		HashMap<String, String> map = new HashMap<String, String>();
-//		map.put("header", "value");
-//		map.put("header2", "value2");
-//		File file = new File(this.directory + "/index.html");
-//		HttpResponse out = new HttpResponse("HTTP/1.1", 200, message, map, file);
-//		return out;
-//	}
-
 	/* (non-Javadoc)
 	 * @see pluginframework.AbstractServlet#execute(protocol.HttpRequest)
 	 */
 	@Override
-	public HttpResponse execute(HttpRequest request) {
+	public HttpResponse execute(HttpRequest request, Server server) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -45,7 +45,7 @@ public class PluginRouter {
 	private String pluginJarName, pluginClassName;
 	private File config;
 	private Scanner scanner;
-	private Class<AbstractPlugin> pluginClass;
+	private Class pluginClass;
 
 	public PluginRouter() {
 		pluginMapping = new HashMap<String, AbstractPlugin>();
@@ -78,77 +78,20 @@ public class PluginRouter {
 						try {
 							scanner = new Scanner(config);
 							String pluginJarDirectory = file.getPath() + "\\";
+							
 							pluginJarName = scanner.nextLine();
 							pluginClassName = scanner.nextLine();
 							scanner.close();
-							// /
-							String pluginTitle = pluginJarName.substring(0,
-									pluginJarName.length() - 4);
-
-							pluginTitle = pluginTitle.replace('/', '.');
-
-							/*
-							 * TODO: PLUGIN FILE LOADING
-							 */
-							// /////////////////////////////////////////
-							// This is where file loading gets hairy //
-							// /////////////////////////////////////////
-							/*
-							 * 
-							 *  ATTEMPT 1/2
-							 *  Loads Jar file as a File object
-							 */
 							File jarFile = new File(pluginJarDirectory
 									+ pluginJarName);
-
 							URL url = jarFile.toURI().toURL();
 							URL[] urls = { url };
 
-							/*
-							 * 
-							 * HERE is where the the hairy loading gets all tangled-up
-							 * 
-							 * The loader should have an array of class names
-							 * (viewable via debugger -> Variables view)
-							 * However, the array is either empty or just
-							 * displays classes not in the JAR file
-							 * I think I acquired the JAR's classes once; yet,
-							 * they would not instantiate
-							 */
-							ClassLoader loader = new URLClassLoader(urls);
+							URLClassLoader loader = new URLClassLoader(urls);
 
-							pluginClass = (Class<AbstractPlugin>) loader
-									.loadClass("concreteplugin.ConcretePlugin");
-							System.out.println("Executing...");
-							Object tester = pluginClass.newInstance();
-
-							/*
-							 *  ATTEMPT 2/2
-							 *  Loads Jar file as a JarFile object and enumerate over Jar Entries
-							 *  This is the basic method for looking-through archive files (i.e. JAR, ZIP, RAR, ...)
-							 *  
-							 *  General processes are the same as above.
-							 */
-							// JarFile jarFile = new JarFile(pluginJarDirectory
-							// + pluginJarName);
-							// Enumeration<JarEntry> e = jarFile.entries();
-
-							// URL url = new URL("jar:file:"
-							// + "concreteplugin!/");
-							// JarClassLoader cl = new JarClassLoader(url);
-							// JarEntry je = null;
-							// while (e.hasMoreElements()) {
-							// je = (JarEntry) e.nextElement();
-							//
-							// if (je.getName().equals(pluginClassName)) {
-							// pluginClass = (Class<AbstractPlugin>) cl
-							// .loadClass(pluginClassName);
-							// pluginMapping.put(pluginTitle,
-							// (AbstractPlugin) tester);
-							// break;
-							// }
-							// }
-
+							pluginClass =  loader.loadClass(pluginClassName);
+							pluginMapping.put(file.getPath(), (AbstractPlugin) pluginClass.getConstructor().newInstance());
+							loader.close();
 						} catch (Exception e) {
 							e.printStackTrace();
 						}

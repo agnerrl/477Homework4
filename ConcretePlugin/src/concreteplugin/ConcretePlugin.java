@@ -27,8 +27,10 @@
  */
 
 package concreteplugin;
-import pluginframework.AbstractPlugin;
+import java.util.HashMap;
 
+import pluginframework.AbstractPlugin;
+import pluginframework.AbstractServlet;
 
 public class ConcretePlugin extends AbstractPlugin {
 
@@ -36,6 +38,7 @@ public class ConcretePlugin extends AbstractPlugin {
 	 * @param directory
 	 */
 	public ConcretePlugin() {
+		servletMapping = new HashMap<String, AbstractServlet>();
 		servletMapping.put("GET", new ConcreteServlet());
 	}
 }
